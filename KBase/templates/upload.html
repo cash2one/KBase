@@ -1,0 +1,94 @@
+{% extends 'base_layer.html' %}
+
+{% block js %}
+
+{% endblock %}
+
+{% block body %}
+
+<br/>
+<form id="form" name="form" class="form-horizontal" action="{{ url_for('upload') }}" method="post" enctype=multipart/form-data>
+    <div id="progress" class="progress">
+        <div class="progress-bar progress-bar-success"></div>
+    </div>
+    <div id="g" class="col-md-4 input-group">
+        <input id="upload" type="file" style="display:none">
+        <span class="input-group-addon glyphicon glyphicon-file" onclick="$('input[id=upload]').click();" style="cursor: pointer; background-color: #e7e7e7;top:0px">选择文件</span>
+        <input id="filename" class="form-control" type="text" readonly="readonly">
+    </div>
+    <div align="right">
+        <br />
+        <input id="btn_upload" class="btn btn-info" type="button" style="float:right" value="导入">
+    </div>
+</form>
+
+<script>
+    document.getElementById("upload").onchange = function () {
+        document.getElementById("filename").value = this.value;
+    };
+    $('#btn_upload').on('click', function(){
+        var formData = new FormData();
+        var name = $("#upload").val();
+        if(name == ""){
+            return false;
+        }
+        var extStart = name.lastIndexOf(".");
+        var ext = name.substring(extStart, name.length).toUpperCase();
+        if (ext != ".JSON" && ext != ".XML" && ext != ".XLS" && ext != ".XLSX" && ext != ".CSV" && ext != ".TXT" && ext != ".EXE") {
+            layer.tips('文件格式有误，只能上传Excel、json、xml、csv、txt文件！', '#filename',{tips: [1, '#3595CC'], time: 4000});
+            return false;
+        };
+        document.getElementById("btn_upload").disabled=true;
+        formData.append("file",$("#upload")[0].files[0]);
+        formData.append("name",name);
+        formData.append("key",parent.data.key);
+        $.ajax({
+            url : '{{ url_for('upload') }}',
+            type : 'POST',
+            data : formData,
+            // 告诉jQuery不要去处理发送的数据
+            processData : false,
+            // 告诉jQuery不要去设置Content-Type请求头
+            contentType : false,
+            xhr: function(){ //获取ajaxSettings中的xhr对象，为它的upload属性绑定progress事件的处理函数
+
+                myXhr = $.ajaxSettings.xhr();
+                if(myXhr.upload){ //检查upload属性是否存在
+                    //绑定progress事件的回调函数
+                    myXhr.upload.addEventListener('progress',progressHandlingFunction, false);
+                }
+                return myXhr; //xhr对象返回给jQuery使用
+            },
+            beforeSend:function(){
+                console.log("正在进行，请稍候");
+            },
+            success : function(responseStr) {
+                if(responseStr == "True"){
+                    console.log("成功"+responseStr);
+                    layer.msg("<span style='font-size:18px;'>"+'导入成功！'+"</span>", {icon:1,time:1000});
+                }else{
+                    console.log("失败");
+                    layer.msg("<span style='color:red; font-size:18px;'>"+'导入失败！'+"</span>", {icon: 2,time:3000});
+                }
+                document.getElementById("btn_upload").disabled=false;
+            },
+            error : function(responseStr) {
+                console.log("error");
+                layer.msg("<span style='color:red; font-size:18px;'>"+'导入失败！'+"</span>", {icon: 2,time:3000});
+                document.getElementById("btn_upload").disabled=false;
+            }
+        });
+
+        function progressHandlingFunction(e) {
+        if (e.lengthComputable) {
+            var progress = parseInt(e.loaded / e.total * 100, 10);
+            $('#progress .progress-bar').css(
+                'width',
+                progress + '%'
+            );
+        };
+    }
+    });
+</script>
+
+{% endblock %}

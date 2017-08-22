@@ -1,0 +1,66 @@
+{% extends 'base_layer.html' %}
+
+{% block js %}
+
+<script>
+    //bootstrapValidator实现表单验证
+    $(function () {
+        $('form').bootstrapValidator({
+            message: 'This value is not valid',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+                },
+            fields: {
+                question: {
+                    message: '验证失败',
+                    validators: {
+                        notEmpty: {
+                            message: '不能为空'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+{% endblock %}
+
+{% block body %}
+
+<br/>
+<form id="form" name="form" class="form-horizontal" action="{{ url_for('extend_modify') }}" method="post">
+    <div class="form-group">
+        <label for="question" class="col-xs-4 col-sm-2 col-md-2 control-label" style="">扩展问:</label>
+        <div class="col-xs-8 col-sm-8 col-md-8">
+            <textarea class="form-control" rows="3" id="question" name="question"></textarea>
+        </div>
+    </div>
+    <div class="form-group">
+        <button id="confrim" name="confrim" type="submit" class="btn btn-info col-md-1" style="float:right">保存修改
+        </button>
+    </div>
+</form>
+
+<script>
+    //结果检测
+    {% if modify == False %}
+        layer.msg("<span style='color:red; font-size:18px;'>"+'提交失败！'+"</span>", {icon: 2,time:3000, msg:['#fff']});
+    {% elif modify %}
+        parent.layer.msg("<span style='font-size:18px;'>"+'修改成功！'+"</span>", {icon:1,time:1000});
+        var index = parent.layer.getFrameIndex(window.name);
+        parent.$("#table").bootstrapTable('refresh');
+        parent.layer.close(index);
+    {% endif %}
+
+    //初始化输入框
+    $(function () {
+        var a = parent.data;
+        $("#question").val(a.kw);
+    });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>智能IT客服支持系统</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <!-- Bootstrap -->
+    <!-- Latest compiled and minified CSS-->
+    <!--<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='web.css') }}">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9] -->
+
+    <!--<script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>-->
+    <script src="{{ url_for('static', filename='html5shiv.min.js') }}"></script>
+    <!--<script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>-->
+    <script src="{{ url_for('static', filename='respond.min.js') }}"></script>
+
+    <![endif] -->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <!--<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>-->
+    <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed-->
+    <!--<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>-->
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+
+    <!--layer-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='skin/default/layer.css') }}">
+    <script src="{{ url_for('static', filename='layer.js') }}"></script>
+
+    <!--&lt;!&ndash; bootstrapValidator &ndash;&gt;-->
+    <!--&lt;!&ndash;<link href="https://cdn.bootcss.com/bootstrap-validator/0.5.3/css/bootstrapValidator.min.css" rel="stylesheet">&ndash;&gt;-->
+    <!--<link rel="stylesheet" href="{{ url_for('static', filename='skin/default/bootstrapValidator.min.css') }}">-->
+    <!--&lt;!&ndash;<script src="https://cdn.bootcss.com/bootstrap-validator/0.5.3/js/bootstrapValidator.min.js"></script>&ndash;&gt;-->
+    <!--<script src="{{ url_for('static', filename='bootstrapValidator.min.js') }}"></script>-->
+    <!--&lt;!&ndash;<script src="https://cdn.bootcss.com/bootstrap-validator/0.5.0/js/language/zh_CN.js"></script>&ndash;&gt;-->
+    <!--<script src="{{ url_for('static', filename='zh_CN.js') }}"></script>-->
+    <!-- icheck -->
+    <!--<script src="https://cdn.bootcss.com/iCheck/1.0.2/icheck.js"></script>-->
+    <!--<script src="{{ url_for('static', filename='icheck.js') }}"></script>-->
+    <!-- bootstrap-table -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-table.css') }}">
+    <script src="{{ url_for('static', filename='bootstrap-table.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap-table-zh-CN.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='tableExport.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap-table-export.js') }}"></script>
+
+    {% block js %}{% endblock %}
+
+</head>
+<body>
+<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{{ url_for('index') }}">智能IT客服支持系统</a>
+        </div>
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav ">
+                <li id="kbases-page-url" class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">知识库工具 <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('index') }}">关键词处理</a></li>
+                        <li><a href="{{ url_for('index') }}">扩展问处理</a></li>
+                        <li><a href="{{ url_for('index') }}">问答处理</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="{{ url_for('index') }}">修改</a></li>
+                        <li><a href="{{ url_for('index') }}">删除</a></li>
+                    </ul>
+                </li>
+                <li><a href="{{ url_for('keyword_tool') }}">关键词工具</a></li>
+                <li><a href="{{ url_for('extend_tool') }}">扩展问工具</a></li>
+                <li><a href="{{ url_for('standard_tool') }}">标准问答对工具</a></li>
+                <li id="about-url"><a href="{{ url_for('index') }}">关于</a></li>
+            </ul>
+                <button type="button" class="btn btn-default navbar-btn" style="float:right;">Sign in</button>
+        </div><!--/.nav-collapse -->
+    </div>
+</div>
+<div class="container-fluid">
+
+    {% block body %}{% endblock %}
+
+</div>
+</body>
+</html>

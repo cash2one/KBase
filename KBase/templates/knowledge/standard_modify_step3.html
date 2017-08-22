@@ -1,0 +1,166 @@
+{% extends 'base_layer.html' %}
+
+{% block js %}
+
+<script>
+    //全选
+    $(function() {
+        $("#checkall").click(function() {
+            var $c = this.checked;
+            $('[name=checkbox]:checkbox').each(function(){
+                this.checked = $c;
+            });
+        });
+
+        $('[name=checkbox]:checkbox').click(function(){
+            var $a = $('[name=checkbox]:checkbox').length;
+            var $b = $('[name=checkbox]:checked').length;
+            if($a == $b){
+                $("#checkall").each(function(){
+                    this.checked = true;
+                });
+            }else{
+                $("#checkall").each(function(){
+                    this.checked = false;
+                });
+            };
+        });
+    });
+
+    //反选
+    $(function(){
+        $("#checkrev").click(function(){
+            $('[name=checkbox]:checkbox').each(function(){
+                this.checked=!this.checked;
+            });
+            var $a = $('[name=checkbox]:checkbox').length;
+            var $b = $('[name=checkbox]:checked').length;
+            if($a == $b){
+                $("#checkall").each(function(){
+                    this.checked = true;
+                });
+            }else{
+                $("#checkall").each(function(){
+                    this.checked = false;
+                });
+            };
+        });
+    });
+
+
+</script>
+
+{% endblock %}
+
+{% block body %}
+
+<br>
+<form id="form" name="form" class="form-horizontal" action="{{ url_for('standard_modify') }}" method="post">
+    <div class="progress">
+        <div class="progress-bar progress-bar-success" role="progressbar"
+             aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
+             style="width: 33%;">第一步
+        </div>
+        <div class="progress-bar progress-bar-info" role="progressbar"
+             aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
+             style="width: 33%;">第二步
+        </div>
+        <div class="progress-bar progress-bar-warning" role="progressbar"
+             aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
+             style="width: 34%;">第三步：选择新关键词信息
+        </div>
+    </div>
+    <div class="form-group" style="margin-left: 0px;margin-right: 0px;">
+        <table id="serf" class="table">
+            <colgroup>
+                <col style="width:20%;">
+                <col style="width:20%;">
+                <col style="width:20%;">
+                <col style="width:20%;">
+                <col style="width:20%;">
+            </colgroup>
+            <thead>
+            <tr>
+                <th>关键词</th>
+                <th>词性</th>
+                <th>权重</th>
+                <th>
+                    <label class="checkbox-inline"><input type="checkbox" id="checkall" checked="checked"/>是否保存关键词</label>
+                </th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for i in nk %}
+            <tr>
+                <td>
+                    <h5>{{i}}</h5>
+                </td>
+                <td>
+                    <select name="{{loop.index0}}" class="sel input-md form-control">
+                        <option value="nr">专有名词</option>
+                        <option value="n">一般名词</option>
+                        <option value="v">动词</option>
+                        <option value="a">形容词/副词</option>
+                        <option value="o">其他</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="text" class="input-md form-control" name="valueset" value="3">
+                </td>
+                <td><label class="checkbox-inline"><input id="checkbox" name="checkbox" type="checkbox"
+                                                          value="{{loop.index0}}" checked="checked" />点击选择</label></td>
+                <td>
+                    <input type="hidden" name="valuesin" value="{{i}}">
+                </td>
+            </tr>
+            {% endfor %}
+            {% for j in ok %}
+            <tr>
+                <td>{{j}}</td>
+                <td>{{j}}</td>
+                <td>2</td>
+                <td>
+                    <label class="checkbox-inline">
+                        <input id="old_checkbox" name="old_checkbox" type="checkbox"
+                               disabled="disabled" value="{{j}}" checked="checked" />不可选择
+                    </label>
+                </td>
+                <td>已存在</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="form-group">
+        <button id="confrim" name="confrim" value="end" type="submit" class="btn btn-info"
+                style="float:right;margin-left: 15px;margin-right: 15px;">保存
+        </button>
+        <label class="checkbox-inline" style="float:right;margin-right: 15px;"><input type="checkbox"
+                                                                                      id="checkrev">反选</label>
+    </div>
+</form>
+
+<script>
+    //select和input绑定
+    $(document).ready(function () {
+        $("#serf tr td select").change(function () {
+            var $thisTD=$(this).parents("tr").find("td:eq(2)")
+            if(($(this).val()) == ('v')){
+                $thisTD.find("input[type='text']").val(1)
+            }else if(($(this).val()) == ('a')){
+                $thisTD.find("input[type='text']").val(0.6)
+            }else if(($(this).val()) == ('nr')){
+                $thisTD.find("input[type='text']").val(3)
+            }else if(($(this).val()) == ('n')){
+                $thisTD.find("input[type='text']").val(2)
+            }else {
+                $thisTD.find("input[type='text']").val(0.2)
+            }
+        });
+    });
+
+
+</script>
+
+{% endblock %}

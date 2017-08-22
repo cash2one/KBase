@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>智能IT客服支持系统</title>
+    <title>Title</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.css') }}">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9] -->
+
+    <!--<script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>-->
+    <script src="{{ url_for('static', filename='html5shiv.min.js') }}"></script>
+    <!--<script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>-->
+    <script src="{{ url_for('static', filename='respond.min.js') }}"></script>
+
+    <![endif] -->
+
+    <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+    <!-- bootstrapValidator -->
+    <!--<link href="https://cdn.bootcss.com/bootstrap-validator/0.5.3/css/bootstrapValidator.min.css" rel="stylesheet">-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrapValidator.min.css') }}">
+    <!--<script src="https://cdn.bootcss.com/bootstrap-validator/0.5.3/js/bootstrapValidator.min.js"></script>-->
+    <script src="{{ url_for('static', filename='bootstrapValidator.min.js') }}"></script>
+    <!--<script src="https://cdn.bootcss.com/bootstrap-validator/0.5.0/js/language/zh_CN.js"></script>-->
+    <script src="{{ url_for('static', filename='zh_CN.js') }}"></script>
+    <!-- icheck -->
+    <!--<script src="https://cdn.bootcss.com/iCheck/1.0.2/icheck.js"></script>-->
+    <!--<script src="{{ url_for('static', filename='icheck.js') }}"></script>-->
+    <!--layer-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='skin/default/layer.css') }}">
+    <script src="{{ url_for('static', filename='layer.js') }}"></script>
+
+    {% block js %}{% endblock %}
+
+</head>
+<body>
+<div class="container">
+
+    {% block body %}{% endblock %}
+
+</div>
+</body>
+</html>
