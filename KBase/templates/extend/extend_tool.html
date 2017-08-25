@@ -74,7 +74,13 @@
                 }, {
                     field: 'synonym',
                     title: '同义词'
-                },]
+                },],
+                onLoadSuccess: function(){  //加载成功时执行
+                    <!--layer.msg("加载成功");-->
+                },
+                onLoadError: function(){  //加载失败时执行
+                    <!--layer.msg("加载数据失败", {time : 5000, icon : 2});-->
+                }
             });
         };
 
@@ -106,7 +112,6 @@
 
 {% block body %}
 
-<br>
 <form id="form" name="form" class="form-horizontal" action="{{ url_for('extend_tool') }}" method="post">
     <div class="">
         <div id="toolbar" class="container" style="padding-left: 0px;">
@@ -144,23 +149,13 @@
         }
     });
 
-    //上传按钮实现
-    $('#btn_upload').on('click', function(){
-        data = {key:'extend'};
-        layer.open({
-        type: 2,
-        title: '文件导入',
-        data: data,
-        maxmin: true,
-        shadeClose: true, //点击遮罩关闭层
-        area: ['60%' , '60%'],
-        content: '{{ url_for('upload') }}'
-        });
-    });
-
     //查找按钮实现
     $('#btn_query').on('click', function(params){
         s = $("#question").val();
+        if(s != s.replace(/[^\d]/g,'')){
+            layer.tips('只能输入数字！', '#question',{tips: [1, '#3595CC'], time: 3000});
+            return false;
+        };
         var opt = {
             url: "{{ url_for('extend_query') }}",
             silent: true,
@@ -241,6 +236,20 @@
         }else{
             layer.msg("<span style='font-size:18px;'>"+"请选中一行"+"</span>", {icon:0,time:1000});
         };
+    });
+
+    //上传按钮实现
+    $('#btn_upload').on('click', function(){
+        data = {key:'extend'};
+        layer.open({
+        type: 2,
+        title: '文件导入',
+        data: data,
+        maxmin: true,
+        shadeClose: true, //点击遮罩关闭层
+        area: ['60%' , '60%'],
+        content: '{{ url_for('upload') }}'
+        });
     });
 
 </script>

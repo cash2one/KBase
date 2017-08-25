@@ -4,12 +4,14 @@
 # @time:2017/8/22
 from __future__ import unicode_literals
 from flask import render_template, request
-from KBase.function import *
+# from KBase.function import *
+from KBase.FunctionForNanWang1000 import *
 import json
 import requests
 import os
 from werkzeug.utils import secure_filename
 from KBase import app
+import time
 
 
 
@@ -38,7 +40,9 @@ def keyword_query():
     try:
         hg = http_get(params)
     except Exception as e:
-        return json.dumps({'data' : [], 'total' : [], 'rows' : [], 'error' : 'error'})
+        app.logger.info("Error: %s", e)
+        return 0
+        # return json.dumps({'data' : [], 'total' : [], 'rows' : [], 'error' : True})
     # lstRes = []
     # for i in range(0, 50):
     #     oModel = {'id': '', 'keyword': '', 'importance': '', 'type': ''}
@@ -73,6 +77,8 @@ def keyword_query():
 def keyword_add():
     if request.method == 'POST':
         flag = False
+        ha = False
+        error = False
         keyword = request.form.get('keyword')
         pos = request.form.get('pos')
         values = request.form.get('values')
@@ -81,12 +87,16 @@ def keyword_add():
         try:
             re = http_post(params, mo)
         except Exception as e:
-            return render_template('keyword/keyword_add.html', error='error', )
-
-        if re['result'] == "success":
+            app.logger.info("Error: %s", e)
+            error = True
+            return render_template('keyword/keyword_add.html', error=error, )
+        print(re)
+        if re['result'] == "success" and re['insert_num'] != 0:
             flag = True
+        elif re['result'] == "success" and re['insert_num'] == 0:
+            ha = True
 
-        return render_template('keyword/keyword_add.html', add=flag, )
+        return render_template('keyword/keyword_add.html', add=flag, ha=ha,)
 
     return render_template('keyword/keyword_add.html')
 
@@ -104,6 +114,7 @@ def keyword_delete():
     try:
         re = http_delete(params, mo)
     except Exception as e:
+        app.logger.info("Error: %s", e)
         return 'error'
 
     app.logger.info("Delete ID: %s", id)
@@ -121,18 +132,21 @@ def keyword_modify():
         type = request.form.get('type')
         importance = request.form.get('importance')
         flag = False
+        error = False
         mo = [{"id":id, "keyword":keyword, "importance":importance, "type":type}]
         params = "/keyword"
 
         try:
             re = http_patch(params, mo)
         except Exception as e:
-            return render_template('keyword/keyword_modify.html', error='error', )
+            app.logger.info("Error: %s", e)
+            error = True
+            return render_template('keyword/keyword_modify.html', error=error, )
 
         if re['result'] == "success":
             flag = True
 
-        app.logger.info("Keyword: %s", keyword)
+        app.logger.info("Keyword: %s", type)
 
         return render_template('keyword/keyword_modify.html', modify=flag, )
 
@@ -158,7 +172,9 @@ def standard_query():
     try:
         hg = http_get(params)
     except Exception as e:
-        return json.dumps({'data' : [], 'total' : [], 'rows' : [], 'error' : 'error'})
+        app.logger.info("Error: %s", e)
+        return 0
+        # return json.dumps({'data' : [], 'total' : [], 'rows' : [], 'error' : 'error'})
     if statu != '':
         xs = {'data': hg['knowledgelist']}
     else:
@@ -205,6 +221,7 @@ def standard_add():
             try:
                 re = http_post(params, mo)
             except Exception as e:
+                app.logger.info("Error: %s", e)
                 return render_template('index.html', error='error', )
 
             return render_template('knowledge/standard_add.html', )
@@ -231,15 +248,17 @@ def standard_add_step2():
     if re['result'] == "success":
         flag = True
     dict_seg = {}
-    seg = "";
+    seg = ""
+    seg = question_seg(question, keyword_only, keyword_only, RMM=False)
+
     # todo 分词模块以及预先加载的关键词、同义词等字典
-    fmm1 = fmm_cut(question, dict_keyword, dict_synonym)  # 问句分词
-    for word in fmm1:
-        seg = seg + "/" + word
-        if word in dict_keyword:
-            dict_seg[word] = float(dict_keyword.get(word))
-        else:
-            dict_seg[word] = 0.0
+    # fmm1 = fmm_cut(question, dict_keyword, dict_synonym)  # 问句分词
+    # for word in fmm1:
+    #     seg = seg + "/" + word
+    #     if word in dict_keyword:
+    #         dict_seg[word] = float(dict_keyword.get(word))
+    #     else:
+    #         dict_seg[word] = 0.0
     # 输入记录至log文件中，事后分析
     app.logger.info("Question: %s", question)
     app.logger.info("Answer: %s", answer)
@@ -253,20 +272,29 @@ def standard_add_step3():
 
     id = request.form.get('id')
     keywords = request.form.get('keywords')
-    klist = keywords.split('/')
+    seg = deleteSparator(keywords)
+    klist = deleteStopwords(seg, stopwords)
     new_keyword = []
     only_keyword = []
     old_keyword = [] # 需要包括权重、词性、关键词
 
-    # todo 预先加载的字典
+    # todo 只添加了一个字典
     for word in klist:
-        if word in dict_keyword:
+        if word in keyword_only:
             old_keyword.append(word)
-        elif word != "" and word != " " and word not in new_keyword:
+        else:
             new_keyword.append(word)
-    for word in klist:
-        if word != "":
-            only_keyword.insert(0,word)
+    only_keyword = klist
+
+    # # todo 预先加载的字典
+    # for word in klist:
+    #     if word in dict_keyword:
+    #         old_keyword.append(word)
+    #     elif word != "" and word != " " and word not in new_keyword:
+    #         new_keyword.append(word)
+    # for word in klist:
+    #     if word != "":
+    #         only_keyword.insert(0,word)
 
     mo = [{"qa_id": id, "extends": [only_keyword]}]
     params = "/extend_question"
@@ -365,16 +393,17 @@ def standard_modify_step2():
         flag = True
 
     dict_seg = {}
-    seg = "";
+    seg = ""
+    seg = question_seg(question, keyword_only, keyword_only, RMM=False)
 
     # todo 分词模块以及预先加载的关键词、同义词等字典
-    fmm1 = fmm_cut(question, dict_keyword, dict_synonym)  # 问句分词
-    for word in fmm1:
-        seg = seg + "/" + word
-        if word in dict_keyword:
-            dict_seg[word] = float(dict_keyword.get(word))
-        else:
-            dict_seg[word] = 0.0
+    # fmm1 = fmm_cut(question, dict_keyword, dict_synonym)  # 问句分词
+    # for word in fmm1:
+    #     seg = seg + "/" + word
+    #     if word in dict_keyword:
+    #         dict_seg[word] = float(dict_keyword.get(word))
+    #     else:
+    #         dict_seg[word] = 0.0
     # 输入记录至log文件中，事后分析
     app.logger.info("Question: %s", question)
     app.logger.info("Answer: %s", answer)
@@ -388,20 +417,29 @@ def standard_modify_step3():
 
     id = request.form.get('id')
     keywords = request.form.get('keywords')
-    klist = keywords.split('/')
+    seg = deleteSparator(keywords)
+    klist = deleteStopwords(seg, stopwords)
     new_keyword = []
     only_keyword = []
-    old_keyword = [] # 需要包括权重、词性、关键词
+    old_keyword = []  # 需要包括权重、词性、关键词
 
-    # todo 预先加载的字典
+    # todo 只添加了一个字典
     for word in klist:
-        if word in dict_keyword:
+        if word in keyword_only:
             old_keyword.append(word)
-        elif word != "" and word != " " and word not in new_keyword:
+        else:
             new_keyword.append(word)
-    for word in klist:
-        if word != "":
-            only_keyword.insert(0,word)
+    only_keyword = klist
+
+    # #  预先加载的字典
+    # for word in klist:
+    #     if word in dict_keyword:
+    #         old_keyword.append(word)
+    #     elif word != "" and word != " " and word not in new_keyword:
+    #         new_keyword.append(word)
+    # for word in klist:
+    #     if word != "":
+    #         only_keyword.insert(0,word)
     # print(only_keyword)
     # print("888")
 
@@ -514,47 +552,53 @@ def extend_add_step2():
     id = request.form.get('ID')
     question = request.form.get('question')
     dict_seg = {}
-    seg = "";
+    seg = ""
+    seg = question_seg(question, keyword_only, keyword_only, RMM=False)
 
     # todo 分词模块以及预先加载的关键词、同义词等字典
-    fmm1 = fmm_cut(question, dict_keyword, dict_synonym)  # 问句分词
-    for word in fmm1:
-        seg = seg + "/" + word
-        if word in dict_keyword:
-            dict_seg[word] = float(dict_keyword.get(word))
-        else:
-            dict_seg[word] = 0.0
+    # fmm1 = fmm_cut(question, dict_keyword, dict_synonym)  # 问句分词
+    # for word in fmm1:
+    #     seg = seg + "/" + word
+    #     if word in dict_keyword:
+    #         dict_seg[word] = float(dict_keyword.get(word))
+    #     else:
+    #         dict_seg[word] = 0.0
+
     # 输入记录至log文件中，事后分析
     app.logger.info("ID: %s", id)
     app.logger.info("Question: %s", question)
     app.logger.info("Seg: %s", seg)
-    app.logger.info("Fmm: %s", fmm1)
 
     return render_template('extend/extend_add_step2.html',
                            id=id, question=question, seg=seg, )
 
 def extend_add_step3():
 
-    # 显示新的关键词
     id = request.form.get('id')
-    # print(id)
-    question = request.form.get('question')
-    # print(question)
     keywords = request.form.get('keywords')
-    klist = keywords.split('/')
+    seg = deleteSparator(keywords)
+    klist = deleteStopwords(seg, stopwords)
     new_keyword = []
-    old_keyword = {}
     only_keyword = []
+    old_keyword = []  # 需要包括权重、词性、关键词
 
-    # todo 预先加载的字典
+    # todo 只添加了一个字典
     for word in klist:
-        if word in dict_keyword:
-            old_keyword[word] = word
-        elif word != "" and word != " " and word not in new_keyword:
+        if word in keyword_only:
+            old_keyword.append(word)
+        else:
             new_keyword.append(word)
-    for word in klist:
-        if word != "":
-            only_keyword.append(word)
+    only_keyword = klist
+
+    #
+    # for word in klist:
+    #     if word in dict_keyword:
+    #         old_keyword[word] = word
+    #     elif word != "" and word != " " and word not in new_keyword:
+    #         new_keyword.append(word)
+    # for word in klist:
+    #     if word != "":
+    #         only_keyword.append(word)
     # 输入记录至log文件中，事后分析
     app.logger.info("Keywords: %s", keywords)
     app.logger.info("klist: %s", klist)
@@ -567,7 +611,7 @@ def extend_add_step3():
     except Exception as e:
         return render_template('knowledge/standard_add.html', )
 
-    return render_template('extend/extend_add_step3.html', id=id, question=question, nk=new_keyword, ok=old_keyword, )
+    return render_template('extend/extend_add_step3.html', id=id, nk=new_keyword, ok=old_keyword, )
 
 @app.route('/extend/extend_delete', methods=['GET', 'POST'])
 @app.route('/extend/extend_delete/', methods=['GET', 'POST'])
@@ -609,6 +653,13 @@ def extend_modify():
 
     return render_template('extend/extend_modify.html', )
 
+
+@app.route('/about', methods=['GET', 'POST'])
+@app.route('/about/', methods=['GET', 'POST'])
+def about():
+    return render_template('about.html')
+
+
 def http_get(params):
     url = app.config.get('URLB') + params
     response = requests.get(url)
@@ -629,16 +680,86 @@ def http_delete(params, mo):
     response = requests.delete(url, json = mo)
     return response.json()
 
+def http_file_post(filepath):
+    url = app.config.get('URLB') + '/fileinput'
+    files = {'fileinput': open(filepath, 'rb')}
+    response = requests.post(url, files = files)
+
+    return response.json()
+
+
+@app.route('/knowledge_test', methods=['GET', 'POST'])
+@app.route('/knowledge_test/', methods=['GET', 'POST'])
+def knowledge_test():
+
+    return render_template('knowledge_test.html')
+
+@app.route('/result_test', methods=['GET', 'POST'])
+@app.route('/result_test/', methods=['GET', 'POST'])
+def result_test():
+    question = str(request.args['statu'])
+    best_id, best_point, best_question = verify(question)
+    re = []
+    for i in range(0, len(best_id)):
+        mo = {}
+        mo['id'] = best_id[i]
+        mo['point'] = best_point[i]
+        mo['question'] = best_question[i]
+        mo['answer'] = answer_dict[best_id[i]]
+        re.append(mo)
+
+    x = {'data': re}
+    return json.dumps(x)
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 @app.route('/upload/', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
-        file = request.files['file']
+        file = request.files['fileinput']
         key = request.form.get('key')
-        filename = secure_filename(file.filename)
-        # print(key)
 
-        file.save(os.path.join('upload/'+ key + '/', filename))
-        return 'True'
+        reverse = (file.filename)[::-1]
+        sp = reverse.split('.',1)
+        file_type = '.' + (sp[0])[::-1]
+        file_name = (sp[1])[::-1]
+        data = time.strftime("_%Y%m%d%H%M%S", time.localtime())
+        filename = secure_filename(file_name) + data + file_type
+
+        file.save(os.path.join('KBase/upload/' + key + '/', filename))
+        filepath = 'KBase/upload/' + key + '/' + filename
+        try:
+            re = http_file_post(filepath)
+            print(re)
+        except Exception as e:
+            app.logger.info('Error: %s', e)
+            return 'False'
+        print(re['result'])
+        if re['result'] == 'success':
+            return 'True'
+        else:
+            return 'False'
     return render_template('upload.html')
+
+
+@app.route('/knowledge_train', methods=['GET', 'POST'])
+@app.route('/knowledge_train/', methods=['GET', 'POST'])
+def knowledge_train():
+    flag = True
+    if request.method == "POST":
+        return str(flag)
+
+    return render_template('knowledge_train.html')
+
+
+
+def fenci():
+    pass
+
+def get_dict():
+    params = '/keyword'
+    re = http_get(params)
+    rt = {}
+    for i in re['keywordlist']:
+        rt[i['keyword']] = i['id']
+    return rt

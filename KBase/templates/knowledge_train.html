@@ -1,0 +1,54 @@
+{% extends 'base_layer.html' %}
+
+{% block js %}
+
+{% endblock %}
+
+{% block body %}
+
+<br>
+<form id="form" name="form" class="form-horizontal" action="" method="post">
+    <div id="mydiv" name="mydiv" style="margin:0 auto;text-align:center;line-height: 20em;">
+        <button id="btn_train" name="btn_train" type="button" class="btn btn-info"
+                style="height:3em;width:6em;font-size:5em">开始训练
+        </button>
+    </div>
+</form>
+
+<script>
+    $('#btn_train').on('click', function(){
+        document.getElementById("btn_train").disabled=true;
+        var formData = new FormData();
+        $.ajax({
+            url : '{{ url_for('knowledge_train') }}',
+            type : 'POST',
+            data : formData,
+            // 告诉jQuery不要去处理发送的数据
+            processData : false,
+            // 告诉jQuery不要去设置Content-Type请求头
+            contentType : false,
+            beforeSend:function(){
+                console.log("正在进行，请稍候");
+                parent.layer.msg("<span style='font-size:18px;'>"+'正在进行，请稍候！'+"</span>", {icon:1,time:3000});
+            },
+            success : function(responseStr) {
+                if(responseStr == "True"){
+                    console.log("成功"+responseStr);
+                    parent.layer.msg("<span style='font-size:18px;'>"+'训练完成！'+"</span>", {icon:1,time:1000});
+                }else{
+                    console.log("失败");
+                    layer.msg("<span style='color:red; font-size:18px;'>"+'训练失败！'+"</span>", {icon: 2,time:3000});
+                };
+                document.getElementById("btn_train").disabled=false;
+            },
+            error : function(responseStr) {
+                console.log("error");
+                alert(responseStr[result]);
+                layer.msg("<span style='color:red; font-size:18px;'>"+'服务器出错！'+"</span>", {icon: 2,time:3000});
+                document.getElementById("btn_train").disabled=false;
+            }
+        });
+    });
+</script>
+
+{% endblock %}

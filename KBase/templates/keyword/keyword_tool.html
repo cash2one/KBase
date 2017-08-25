@@ -76,7 +76,13 @@
                 }, {
                     field: 'type',
                     title: '词性'
-                } ]
+                } ],
+                onLoadSuccess: function(){  //加载成功时执行
+                    <!--layer.msg("加载成功");-->
+                },
+                onLoadError: function(){  //加载失败时执行
+                    <!--layer.msg("加载数据失败", {time : 1500, icon : 2});-->
+                }
             });
         };
 
@@ -89,6 +95,9 @@
             };
             return temp;
         };
+
+
+
         return oTableInit;
     };
 
@@ -108,7 +117,6 @@
 
 {% block body %}
 
-<br>
 <form id="form" name="form" class="form-horizontal" action="{{ url_for('keyword_tool') }}" method="post">
     <div class="" style="">
         <div id="toolbar" class="container" style="padding-left: 0px">
@@ -129,7 +137,7 @@
             <div class="form-group col-md-5 col-sm-5 col-xs-5" style="float:right;padding-right: 0px;">
                 <div class="col-md-10 col-sm-8 col-xs-6" style="padding-left: 0px;">
                     <input type="text" style="display:none">
-                    <input type="text" class="form-control" style="" id="keyword" placeholder="输入关键词" name="keyword">
+                    <input type="text" class="form-control" style="" id="keyword" placeholder="输入关键词或关键词ID" name="keyword">
                 </div>
                 <button id="btn_query" type="button" class="btn btn-info">查询</button>
             </div>
@@ -144,20 +152,6 @@
         if(event.which == 13) {
             $("#btn_query").click();
         }
-    });
-
-    //上传按钮实现
-    $('#btn_upload').on('click', function(){
-        data = {key:'keyword'};
-        layer.open({
-        type: 2,
-        title: '文件导入',
-        data: data,
-        maxmin: true,
-        shadeClose: true, //点击遮罩关闭层
-        area: ['60%' , '60%'],
-        content: '{{ url_for('upload') }}'
-        });
     });
 
     //查找按钮实现
@@ -176,6 +170,7 @@
     });
 
     //添加按钮实现
+    //添加不会刷新
     $('#btn_add').on('click', function(){
         layer.open({
         type: 2,
@@ -188,6 +183,7 @@
     });
 
     //删除按钮实现
+    //删除最后一页所有数据的时候，页面数据会空，下面的翻页也会不显示，需要刷新一下
     $('#btn_delete').on('click', function(){
         var a= $('#table').bootstrapTable('getSelections');
         if(a.length>=1){
@@ -210,6 +206,8 @@
                         if(data == 'True'){
                             layer.msg("<span style='font-size:18px;'>"+'删除成功！'+"</span>", {icon:1,time:1000});
                             $("#table").bootstrapTable('refresh');
+                        }else if(data == 'error'){
+                            layer.msg("<span style='color:red; font-size:18px;'>"+'服务器出错！'+"</span>", {icon: 2,time:3000, msg:['#fff']});
                         }else{
                             layer.msg("<span style='color:red; font-size:18px;'>"+'删除失败！'+"</span>", {icon: 2,time:3000, msg:['#fff']});
                         };
@@ -246,6 +244,20 @@
         }else{
             layer.msg("<span style='font-size:18px;'>"+"请选中一行"+"</span>", {icon:0,time:1000});
         };
+    });
+
+    //上传按钮实现
+    $('#btn_upload').on('click', function(){
+        data = {key:'keyword'};
+        layer.open({
+        type: 2,
+        title: '文件导入',
+        data: data,
+        maxmin: true,
+        shadeClose: true, //点击遮罩关闭层
+        area: ['60%' , '60%'],
+        content: '{{ url_for('upload') }}'
+        });
     });
 
 </script>

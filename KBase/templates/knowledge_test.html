@@ -27,32 +27,33 @@
         //初始化Table
         oTableInit.Init = function () {
             $('#table').bootstrapTable({
-                url: '{{ url_for('standard_query') }}',         //请求后台的URL（*）
+                url: '{{ url_for('result_test') }}',         //请求后台的URL（*）
                 ajaxOptions: {async:true,timeout:5000},
                 method: 'get',                      //请求方式（*）
                 toolbar: '#toolbar',                //工具按钮用哪个容器
+                toolbarAlign: 'right',
                 striped: true,                      //是否显示行间隔色
                 cache: false,                       //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
                 pagination: true,                   //是否显示分页（*）
                 sortable: false,                     //是否启用排序
                 sortOrder: "asc",                   //排序方式
                 queryParams: oTableInit.queryParams,//传递参数（*）
-                sidePagination: "server",           //分页方式：client客户端分页，server服务端分页（*）
+                sidePagination: "client",           //分页方式：client客户端分页，server服务端分页（*）
                 pageNumber:1,                       //初始化加载第一页，默认第一页
                 pageSize: 10,                       //每页的记录行数（*）
                 pageList: [10, 50, 100, ,"All"],        //可供选择的每页的行数（*）
                 search: false,                       //是否显示表格搜索，此搜索是客户端搜索，不会进服务端，所以，个人感觉意义不大
                 strictSearch: true,
-                showColumns: true,                  //是否显示所有的列
-                showRefresh: true,                  //是否显示刷新按钮
+                showColumns: false,                  //是否显示所有的列
+                showRefresh: false,                  //是否显示刷新按钮
                 minimumCountColumns: 2,             //最少允许的列数
-                clickToSelect: true,                //是否启用点击选中行
+                clickToSelect: false,                //是否启用点击选中行
                 height: 565,                        //行高，如果没有设置height属性，表格自动根据记录条数觉得表格高度
                 uniqueId: "_id",                     //每一行的唯一标识，一般为主键列
                 showToggle:false,                    //是否显示详细视图和列表视图的切换按钮
                 cardView: false,                    //是否显示详细视图
                 detailView: false,                   //是否显示父子表
-                showExport: true,                     //是否显示导出
+                showExport: false,                     //是否显示导出
                 exportDataType: "selected",              //basic', 'all', 'selected'.
                 exportTypes:['json', 'xml', 'csv', 'txt', 'sql', 'excel'],  //导出文件类型
                 exportOptions:{
@@ -63,27 +64,18 @@
                     onMsoNumberFormat: DoOnMsoNumberFormat
                 },
                 columns: [{
-                    checkbox: true
-                }, {
                     field: 'id',
                     title: 'ID'
                 }, {
-                    field: 'qa_md5',
-                    title: 'MD5'
+                    field: 'point',
+                    title: '评分'
                 }, {
                     field: 'question',
-                    title: '标准问题'
+                    title: '问题'
                 }, {
                     field: 'answer',
-                    title: '标准答案',
-                    <!--formatter:function(value,row,index){-->
-                        <!--&lt;!&ndash;return "<textarea>" + value + "</textarea>";&ndash;&gt;-->
-                        <!--return $("<div>").text(value).html();-->
-                    <!--}-->
-                }, {
-                    field: 'link',
-                    title: '链接'
-                }, ],
+                    title: '答案'
+                }],
                 onLoadSuccess: function(){  //加载成功时执行
                     <!--layer.msg("加载成功");-->
                 },
@@ -123,27 +115,13 @@
 
 <form id="form" name="form" class="form-horizontal" action="{{ url_for('standard_tool') }}" method="post">
     <div class="">
-        <div id="toolbar" class="container" style="padding-left: 0px;">
-            <div class="btn-group" style="float:left">
-                <button id="btn_modify" type="button" class="btn btn-default" style="">
-                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>修改
-                </button>
-                <button id="btn_add" type="button" class="btn btn-default" style="">
-                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>添加
-                </button>
-                <button id="btn_upload" type="button" class="btn btn-default" style="">
-                    <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span>导入
-                </button>
-                <button id="btn_delete" type="button" class="btn btn-default" style="color:#FF0000">
-                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>删除
-                </button>
-            </div>
+        <div id="toolbar" class="container" style="float:left;padding-right: 0px">
             <div class="form-group col-md-5 col-sm-5 col-xs-5" style="float:right;padding-right: 0px;">
                 <div class="col-md-10 col-sm-8 col-xs-6" style="padding-left: 0px;">
                     <input type="text" style="display:none">
-                    <input type="text" class="form-control" style="" id="question" placeholder="输入关键词或问题ID" name="question">
+                    <input type="text" class="form-control" style="" id="question" placeholder="输入问题" name="question">
                 </div>
-                <button id="btn_query" type="button" class="btn btn-info">查询</button>
+                <button id="btn_test" type="button" class="btn btn-info">测试</button>
             </div>
         </div>
         <table id="table"></table>
@@ -154,15 +132,15 @@
     //input回车监测
     $("#question").on("keypress",function(event){
         if(event.which == 13) {
-            $("#btn_query").click();
+            $("#btn_test").click();
         }
     });
 
     //查找按钮实现
-    $('#btn_query').on('click', function(params){
+    $('#btn_test').on('click', function(params){
         $('#table').bootstrapTable('refreshOptions',{pageNumber:1});
         var opt = {
-            url: "{{ url_for('standard_query') }}",
+            url: "{{ url_for('result_test') }}",
             silent: true,
             query:{
                 limit: params.limit,   //页面大小
@@ -176,92 +154,6 @@
             $('#table').bootstrapTable('refreshOptions',{sidePagination: "client"});
         };
         $("#table").bootstrapTable('refresh', opt);
-    });
-
-    //添加按钮实现
-    $('#btn_add').on('click', function(){
-        layer.open({
-        type: 2,
-        title: '标准问答对添加',
-        maxmin: true,
-        shadeClose: true, //点击遮罩关闭层
-        area: ['80%' , '90%'],
-        content: '{{ url_for('standard_add') }}'
-        });
-    });
-
-    //删除按钮实现
-    $('#btn_delete').on('click', function(){
-        var a= $('#table').bootstrapTable('getSelections');
-        if(a.length>=1){
-            layer.confirm('确认删除吗？', {
-                btn: ['确认','取消'] //按钮
-                },
-                function(){
-                    var row=$.map($("#table").bootstrapTable('getSelections'),function(row){
-                        return row ;
-                    });
-                    var b = new Array();
-                    for(var i = 0; i < a.length; i++){
-                        b[i] = row[i].id;
-                    };
-                    data = {delete:b};
-                    $.post('{{url_for("standard_delete")}}',data,
-                    function(data){
-                        if(data == '0'){
-                            layer.msg("<span style='font-size:18px;'>"+'删除成功！'+"</span>", {icon:1,time:1000});
-                            $("#table").bootstrapTable('refresh');
-                        }else{
-                            layer.msg("<span style='color:red; font-size:18px;'>"+'删除失败！'+"</span>", {icon: 2,time:3000, msg:['#fff']});
-                        };
-                    });
-                },
-                function(){}
-            );
-        }else{
-            layer.msg("<span style='font-size:18px;'>"+"请至少选中一行"+"</span>", {icon:0,time:1000});
-        };
-    });
-
-    //修改按钮实现
-    $('#btn_modify').on('click', function(){
-        var a= $('#table').bootstrapTable('getSelections');
-        if(a.length>=1){
-            var row=$.map($("#table").bootstrapTable('getSelections'),function(row){
-            return row ;
-            });
-            data = {
-                id:row[0].id,
-                qa:row[0].question,
-                an:row[0].answer,
-                lk:row[0].link,
-            };
-            layer.open({
-            type: 2,
-            title: '标准问答对修改',
-            shadeClose: true,
-            shade: [0],
-            shadeClose: true, //点击遮罩关闭层
-            area: ['80%' , '90%'],
-            content: '{{ url_for('standard_modify') }}'
-            });
-        }else{
-            layer.msg("<span style='font-size:18px;'>"+"请选中一行"+"</span>", {icon:0,time:1000});
-        };
-    });
-
-    //上传按钮实现
-    $('#btn_upload').on('click', function(){
-        data = {key:'standard'};
-        layer.open({
-        type: 2,
-        title: '文件导入',
-        data: data,
-        maxmin: true,
-        shadeClose: true, //点击遮罩关闭层
-        area: ['60%' , '60%'],
-        content: '{{ url_for('upload') }}'
-        });
     });
 
 </script>

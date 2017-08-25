@@ -70,30 +70,45 @@
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav ">
                 <li id="kbases-page-url" class="dropdown">
+
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-                       aria-expanded="false">知识库工具 <span class="caret"></span></a>
+                       aria-expanded="false"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> 训练、导出工具 <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="{{ url_for('index') }}">关键词处理</a></li>
-                        <li><a href="{{ url_for('index') }}">扩展问处理</a></li>
-                        <li><a href="{{ url_for('index') }}">问答处理</a></li>
+                        <li><a href="javascript:void(0);" class="alink">知识库训练</a></li>
                         <li role="separator" class="divider"></li>
-                        <li><a href="{{ url_for('index') }}">修改</a></li>
-                        <li><a href="{{ url_for('index') }}">删除</a></li>
+                        <li><a href="http://119.23.237.255/aimanage/fileoutput/knowledge/xml">问答对导出</a></li>
+                        <li><a href="http://119.23.237.255/aimanage/fileoutput/keyword/xml">关键词导出</a></li>
                     </ul>
                 </li>
-                <li><a href="{{ url_for('keyword_tool') }}">关键词工具</a></li>
-                <li><a href="{{ url_for('extend_tool') }}">扩展问工具</a></li>
-                <li><a href="{{ url_for('standard_tool') }}">标准问答对工具</a></li>
-                <li id="about-url"><a href="{{ url_for('index') }}">关于</a></li>
+                <li><a href="{{ url_for('keyword_tool') }}"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> 关键词工具</a></li>
+                <li><a href="{{ url_for('extend_tool') }}"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> 扩展问工具</a></li>
+                <li><a href="{{ url_for('standard_tool') }}"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> 标准问答对工具</a></li>
+                <li><a href="{{ url_for('knowledge_test') }}"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> 知识库测试工具</a></li>
+                <li id="about-url"><a href="{{ url_for('about') }}"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span> 关于</a></li>
             </ul>
-                <button type="button" class="btn btn-default navbar-btn" style="float:right;">Sign in</button>
+                <!--<button type="button" class="btn btn-default navbar-btn" style="float:right;">Sign in</button>-->
         </div><!--/.nav-collapse -->
     </div>
 </div>
+<br />
+
 <div class="container-fluid">
 
     {% block body %}{% endblock %}
 
 </div>
+<script>
+    $(".alink").click(function() {
+        layer.open({
+        type: 2,
+        title: '关键词添加',
+        maxmin: true,
+        shade:0,
+        area: ['60%' , '60%'],
+        content: '{{ url_for('knowledge_train') }}'
+        });
+    });
+
+</script>
 </body>
 </html>

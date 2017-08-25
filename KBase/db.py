@@ -1,17 +1,15 @@
 import os, sqlite3
 
 # 移除已有的文件，以免对测试造成干扰
-db_file = os.path.join(os.path.dirname(__file__), 'test.db')
+db_file = os.path.join(os.path.dirname(__file__), 'knowledge.db')
 if os.path.isfile(db_file):
     os.remove(db_file)
 
 # 初始数据:
 conn = sqlite3.connect(db_file)
 cursor = conn.cursor()
-cursor.execute('create table user(id varchar(20) primary key, name varchar(20), score int)')
-cursor.execute(r"insert into user values ('A-001', 'Adam', 95)")
-cursor.execute(r"insert into user values ('A-002', 'Bart', 62)")
-cursor.execute(r"insert into user values ('A-003', 'Lisa', 78)")
+cursor.execute('drop table if exites [keyword]')
+cursor.execute('create table kwyword(id varchar(10) primary key, keyword varchar(20), importance int, type varchar(10)')
 cursor.close()
 conn.commit()
 conn.close()

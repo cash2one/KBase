@@ -7,17 +7,23 @@
 {% block body %}
 
 <br/>
-<form id="form" name="form" class="form-horizontal" action="{{ url_for('upload') }}" method="post" enctype=multipart/form-data>
+<!--<form id="form" name="form" class="form-horizontal" action="http://119.23.237.255/aimanage/fileinput" method="post" enctype=multipart/form-data>-->
+        <!--<input id="upload" name="fileinput" type="file" >-->
+
+        <!--<input type="submit">-->
+<!--</form>-->
+<form id="form" name="form" class="form-horizontal" action="http://119.23.237.255/aimanage/fileinput" method="post" enctype='multipart/form-data' >
     <div id="progress" class="progress">
         <div class="progress-bar progress-bar-success"></div>
     </div>
     <div id="g" class="col-md-4 input-group">
-        <input id="upload" type="file" style="display:none">
+        <input id="upload" name="fileinput" type="file" style="display:none">
         <span class="input-group-addon glyphicon glyphicon-file" onclick="$('input[id=upload]').click();" style="cursor: pointer; background-color: #e7e7e7;top:0px">选择文件</span>
         <input id="filename" class="form-control" type="text" readonly="readonly">
     </div>
     <div align="right">
         <br />
+        <!--<input type="submit" class="btn btn-info" value="导入">-->
         <input id="btn_upload" class="btn btn-info" type="button" style="float:right" value="导入">
     </div>
 </form>
@@ -26,6 +32,7 @@
     document.getElementById("upload").onchange = function () {
         document.getElementById("filename").value = this.value;
     };
+
     $('#btn_upload').on('click', function(){
         var formData = new FormData();
         var name = $("#upload").val();
@@ -39,14 +46,14 @@
             return false;
         };
         document.getElementById("btn_upload").disabled=true;
-        formData.append("file",$("#upload")[0].files[0]);
+        formData.append("fileinput",$("#upload")[0].files[0]);
         formData.append("name",name);
         formData.append("key",parent.data.key);
         $.ajax({
             url : '{{ url_for('upload') }}',
             type : 'POST',
             data : formData,
-            // 告诉jQuery不要去处理发送的数据
+            // 告诉jQuery不要去处理发送的数据 {{ url_for('upload') }}
             processData : false,
             // 告诉jQuery不要去设置Content-Type请求头
             contentType : false,
@@ -61,6 +68,7 @@
             },
             beforeSend:function(){
                 console.log("正在进行，请稍候");
+                layer.msg("<span style='font-size:18px;'>"+'正在进行，请稍候！'+"</span>", {icon:1,time:100000});
             },
             success : function(responseStr) {
                 if(responseStr == "True"){
@@ -69,11 +77,12 @@
                 }else{
                     console.log("失败");
                     layer.msg("<span style='color:red; font-size:18px;'>"+'导入失败！'+"</span>", {icon: 2,time:3000});
-                }
+                };
                 document.getElementById("btn_upload").disabled=false;
             },
             error : function(responseStr) {
                 console.log("error");
+                alert(responseStr[result]);
                 layer.msg("<span style='color:red; font-size:18px;'>"+'导入失败！'+"</span>", {icon: 2,time:3000});
                 document.getElementById("btn_upload").disabled=false;
             }
