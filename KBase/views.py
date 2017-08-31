@@ -4,7 +4,6 @@
 # @time:2017/8/22
 from __future__ import unicode_literals
 from flask import render_template, request
-# from KBase.function import *
 from KBase.FunctionForNanWang1000 import *
 import json
 import requests

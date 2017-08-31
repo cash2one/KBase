@@ -2020,6 +2020,12 @@
             contentType: this.options.contentType,
             dataType: this.options.dataType,
             success: function (res) {
+                if(that.options.pagination&&res.total&&!res.rows.length){//总记录数大于0,但当前页记录数为0,则此时页码超过了最大页码误
+                    that.options.pageNumber = Math.ceil(res.total/that.options.pageSize);//最后一页(总页数)
+                    that.initServer();
+                    return;
+                };
+
                 res = calculateObjectValue(that.options, that.options.responseHandler, [res], res);
 
                 that.load(res);

@@ -4,11 +4,14 @@
 # @time:2017/8/22
 from flask import Flask
 import click
+import KBase.views
+# from KBase.db import init_db
 # from flask import current_app
 
 app = Flask(__name__)
+# init_db()
 
-import KBase.views
+
 
 if not app.debug:
     import logging
