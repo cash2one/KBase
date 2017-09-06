@@ -3,8 +3,14 @@
 {% block js %}
 
 <script>
+
+
     //bootstrapValidator实现表单验证
     $(function () {
+        {% if error %}
+            layer.msg("<span style='color:red; font-size:18px;'>"+'服务器出错！'+"</span>", {icon: 2,time:3000, msg:['#fff']});
+        {% endif %}
+
         $('form').bootstrapValidator({
             message: 'This value is not valid',
             feedbackIcons: {

@@ -117,13 +117,13 @@
             {% endfor %}
             {% for j in ok %}
             <tr>
-                <td>{{j}}</td>
-                <td>{{j}}</td>
-                <td>2</td>
+                <td>{{j[0]}}</td>
+                <td>{{j[1]}}</td>
+                <td>{{j[2]}}</td>
                 <td>
                     <label class="checkbox-inline">
                         <input id="old_checkbox" name="old_checkbox" type="checkbox"
-                               disabled="disabled" value="{{j}}" checked="checked" />不可选择
+                               disabled="disabled" value="{{j[0]}}" checked="checked" />不可选择
                     </label>
                 </td>
                 <td>已存在</td>

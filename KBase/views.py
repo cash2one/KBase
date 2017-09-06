@@ -40,8 +40,7 @@ def keyword_query():
         hg = http_get(params)
     except Exception as e:
         app.logger.info("Error: %s", e)
-        return 0
-        # return json.dumps({'data' : [], 'total' : [], 'rows' : [], 'error' : True})
+        return json.dumps({'data': 0, 'rows': [], 'error': True})
     # lstRes = []
     # for i in range(0, 50):
     #     oModel = {'id': '', 'keyword': '', 'importance': '', 'type': ''}
@@ -67,7 +66,7 @@ def keyword_query():
             total = 0
         else:
             total = len(res)
-        xs = {'total': total, 'rows': res}
+        xs = {'total': total, 'rows': res, 'error': False}
 
     return json.dumps(xs)
 
@@ -172,14 +171,14 @@ def standard_query():
         hg = http_get(params)
     except Exception as e:
         app.logger.info("Error: %s", e)
-        return 0
+        return json.dumps({'total': 0, 'rows': [], 'error': True})
         # return json.dumps({'data' : [], 'total' : [], 'rows' : [], 'error' : 'error'})
     if statu != '':
         xs = {'data': hg['knowledgelist']}
     else:
         res = hg['knowledgelist']
         total = str(hg['knowledgelen'])
-        xs = {'total': total, 'rows': res}
+        xs = {'total': total, 'rows': res, 'error': False}
 
     return json.dumps(xs)
 
@@ -221,7 +220,8 @@ def standard_add():
                 re = http_post(params, mo)
             except Exception as e:
                 app.logger.info("Error: %s", e)
-                return render_template('index.html', error='error', )
+                error = True
+                return render_template('knowledge/standard_add.html', error=error)
 
             return render_template('knowledge/standard_add.html', )
 
@@ -234,12 +234,15 @@ def standard_add_step2():
     question = request.form.get('question')
     answer = request.form.get('answer')
     link = request.form.get('link')
+    error = False
     mo = [{"question": question, "answer": answer, "link": link}]
     params = "/knowledge"
     try:
         re = http_post(params, mo)
     except Exception as e:
-        return render_template('knowledge/standard_add.html', )
+        app.logger.info("Error: %s", e)
+        error = True
+        return render_template('knowledge/standard_add.html', error=error)
 
     id = re['insert_list'][0]['id']
     # print(id)
@@ -248,7 +251,7 @@ def standard_add_step2():
         flag = True
     dict_seg = {}
     seg = ""
-    seg = question_seg(question, keyword_only, keyword_only, RMM=False)
+    seg = question_seg(question, keywords_dict, synonym, RMM=False)
 
     # todo 分词模块以及预先加载的关键词、同义词等字典
     # fmm1 = fmm_cut(question, dict_keyword, dict_synonym)  # 问句分词
@@ -262,8 +265,7 @@ def standard_add_step2():
     app.logger.info("Question: %s", question)
     app.logger.info("Answer: %s", answer)
     app.logger.info("Seg: %s", seg)
-
-    return render_template('knowledge/standard_add_step2.html', seg=seg, flag=flag, id=id)
+    return render_template('knowledge/standard_add_step2.html', seg=seg, flag=flag, id=id, )
 
 def standard_add_step3():
 
@@ -272,15 +274,19 @@ def standard_add_step3():
     id = request.form.get('id')
     keywords = request.form.get('keywords')
     seg = deleteSparator(keywords)
-    klist = deleteStopwords(seg, stopwords)
+    klist = deleteStopwords(seg)
     new_keyword = []
     only_keyword = []
     old_keyword = [] # 需要包括权重、词性、关键词
 
     # todo 只添加了一个字典
     for word in klist:
-        if word in keyword_only:
-            old_keyword.append(word)
+        if word in keyword_only or word in synonym:
+            words = []
+            words.append(word)
+            words.append(keywords_type_dict[word])
+            words.append(keywords_dict[word])
+            old_keyword.append(words)
         else:
             new_keyword.append(word)
     only_keyword = klist
@@ -300,7 +306,9 @@ def standard_add_step3():
     try:
         re = http_post(params, mo)
     except Exception as e:
-        return render_template('knowledge/standard_add.html', )
+        app.logger.info("Error: %s", e)
+        error = True
+        return render_template('knowledge/standard_add.html', error=error)
 
     app.logger.info("Keywords: %s", keywords)
 
@@ -312,17 +320,22 @@ def standard_delete():
     delete = request.form.getlist('delete[]')
     res = []
     mo = []
+    flag = False
     for i in delete:
         # print(i)
         params = "/knowledge/" + i
         try:
             re = http_delete(params, mo)
         except Exception as e:
-            return '1'
+            app.logger.info("Error: %s", e)
+            return 'error'
         # print(re)
         if re['result'] != "success":
             res.append(i)
-    return '0'
+        else:
+            flag = True
+
+    return str(flag)
 
 @app.route('/knowledge/standard_modify', methods=['GET', 'POST'])
 @app.route('/knowledge/standard_modify/', methods=['GET', 'POST'])
@@ -361,7 +374,9 @@ def standard_modify():
             try:
                 re = http_post(params, mo)
             except Exception as e:
-                return render_template('index.html', error='error', )
+                app.logger.info("Error: %s", e)
+                error = True
+                return render_template('knowledge/standard_modify.html', error=error)
             flag = False
             if (re['result'] == 'success'):
                 flag = True
@@ -386,14 +401,16 @@ def standard_modify_step2():
     try:
         re = http_patch(params, mo)
     except Exception as e:
-        return render_template('index.html', error='error', )
+        app.logger.info("Error: %s", e)
+        error = True
+        return render_template('knowledge/standard_modify.html', error=error)
     flag = False
     if (re['result'] == 'success'):
         flag = True
 
     dict_seg = {}
     seg = ""
-    seg = question_seg(question, keyword_only, keyword_only, RMM=False)
+    seg = question_seg(question, keywords_dict, synonym, RMM=False)
 
     # todo 分词模块以及预先加载的关键词、同义词等字典
     # fmm1 = fmm_cut(question, dict_keyword, dict_synonym)  # 问句分词
@@ -417,15 +434,19 @@ def standard_modify_step3():
     id = request.form.get('id')
     keywords = request.form.get('keywords')
     seg = deleteSparator(keywords)
-    klist = deleteStopwords(seg, stopwords)
+    klist = deleteStopwords(seg)
     new_keyword = []
     only_keyword = []
     old_keyword = []  # 需要包括权重、词性、关键词
 
     # todo 只添加了一个字典
     for word in klist:
-        if word in keyword_only:
-            old_keyword.append(word)
+        if word in keyword_only or word in synonym:
+            words = []
+            words.append(word)
+            words.append(keywords_type_dict[word])
+            words.append(keywords_dict[word])
+            old_keyword.append(words)
         else:
             new_keyword.append(word)
     only_keyword = klist
@@ -448,7 +469,9 @@ def standard_modify_step3():
     try:
         re = http_post(params, mo)
     except Exception as e:
-        return render_template('index.html', )
+        app.logger.info("Error: %s", e)
+        error = True
+        return render_template('knowledge/standard_modify.html', error=error)
 
     app.logger.info("Keywords: %s", keywords)
 
@@ -481,7 +504,11 @@ def extend_query():
     # total = len(lstRes)
     # re = lstRes[offset:offset + limit]
     # x = {'total': total, 'rows': re}
-    hg = http_get(params)
+    try:
+        hg = http_get(params)
+    except Exception as e:
+        app.logger.info("Error: %s", e)
+        return json.dumps({'data': [], 'error': True})
     res = []
     for i in hg:
         if i['extend_list'] == []:
@@ -496,7 +523,7 @@ def extend_query():
         total = 0
     else:
         total = len(res)
-    xs = {'data': res}
+    xs = {'data': res, 'error': False}
 
     return json.dumps(xs)
 
@@ -538,8 +565,9 @@ def extend_add():
             try:
                 re = http_post(params, mo)
             except Exception as e:
-                # print(e)
-                return render_template('index.html', error='error', )
+                app.logger.info("Error: %s", e)
+                error = True
+                return render_template('knowledge/extend_add.html', error=error)
 
             return render_template('extend/extend_add.html', )
     # 显示StandardAdd页面，输入问题ID、问题、答案
@@ -552,7 +580,7 @@ def extend_add_step2():
     question = request.form.get('question')
     dict_seg = {}
     seg = ""
-    seg = question_seg(question, keyword_only, keyword_only, RMM=False)
+    seg = question_seg(question, keywords_dict, synonym, RMM=False)
 
     # todo 分词模块以及预先加载的关键词、同义词等字典
     # fmm1 = fmm_cut(question, dict_keyword, dict_synonym)  # 问句分词
@@ -576,15 +604,19 @@ def extend_add_step3():
     id = request.form.get('id')
     keywords = request.form.get('keywords')
     seg = deleteSparator(keywords)
-    klist = deleteStopwords(seg, stopwords)
+    klist = deleteStopwords(seg)
     new_keyword = []
     only_keyword = []
     old_keyword = []  # 需要包括权重、词性、关键词
 
     # todo 只添加了一个字典
     for word in klist:
-        if word in keyword_only:
-            old_keyword.append(word)
+        if word in keyword_only or word in synonym:
+            words = []
+            words.append(word)
+            words.append(keywords_type_dict[word])
+            words.append(keywords_dict[word])
+            old_keyword.append(words)
         else:
             new_keyword.append(word)
     only_keyword = klist
@@ -608,7 +640,9 @@ def extend_add_step3():
     try:
         re = http_post(params, mo)
     except Exception as e:
-        return render_template('knowledge/standard_add.html', )
+        app.logger.info("Error: %s", e)
+        error = True
+        return render_template('knowledge/extend_add.html', error=error)
 
     return render_template('extend/extend_add_step3.html', id=id, nk=new_keyword, ok=old_keyword, )
 
@@ -625,37 +659,39 @@ def extend_delete():
     h['qa_id'] = id
     h['ex_id'] = delete
     mo = [h]
+    flag = False
     try:
         re = http_delete(params, mo)
     except Exception as e:
-        return '1'
+        app.logger.info("Error: %s", e)
+        return 'error'
 
+    if re['result'] == "success":
+        flag = True
 
-    if re['result'] != "success":
-        return '0'
-    else:
-        return '1'
+    return str(flag)
 
-@app.route('/extend/extend_modify', methods=['GET', 'POST'])
-@app.route('/extend/extend_modify/', methods=['GET', 'POST'])
-def extend_modify():
-    if request.method == 'POST':
-        question = request.form.get('question')
-        flag = False
-
-        if (question.strip() == '随机'):
-            flag = True
-        # 输入记录至log文件中，事后分析
-        app.logger.info("Keyword: %s",question)
-
-        return render_template('extend/extend_modify.html', modify=flag, )
-
-    return render_template('extend/extend_modify.html', )
+# @app.route('/extend/extend_modify', methods=['GET', 'POST'])
+# @app.route('/extend/extend_modify/', methods=['GET', 'POST'])
+# def extend_modify():
+#     if request.method == 'POST':
+#         question = request.form.get('question')
+#         flag = False
+#
+#         if (question.strip() == '随机'):
+#             flag = True
+#         # 输入记录至log文件中，事后分析
+#         app.logger.info("Keyword: %s",question)
+#
+#         return render_template('extend/extend_modify.html', modify=flag, )
+#
+#     return render_template('extend/extend_modify.html', )
 
 
 @app.route('/about', methods=['GET', 'POST'])
 @app.route('/about/', methods=['GET', 'POST'])
 def about():
+
     return render_template('about.html')
 
 
@@ -707,7 +743,7 @@ def result_test():
         mo['answer'] = answer_dict[best_id[i]]
         re.append(mo)
 
-    x = {'data': re}
+    x = {'data': re, 'question_seg': question_seg(question, keywords_dict, synonym, RMM=False)}
     return json.dumps(x)
 
 
@@ -744,8 +780,27 @@ def upload():
 @app.route('/knowledge_train', methods=['GET', 'POST'])
 @app.route('/knowledge_train/', methods=['GET', 'POST'])
 def knowledge_train():
+    global keywords_dict
     flag = True
     if request.method == "POST":
+        # refresh()
+        # for i in keywords_dict:
+        #     keywords_dict[i] = 1
+        # print(keywords_dict)
+        # a = 0
+        # for i in answer_dict:
+        #     # if a >= 100:
+        #     #     break
+        #     # a += 1
+        #     ans = answer_dict[i]
+        #     ques = questionSeg[i]
+        #     for j in ques:
+        #         train(j, ans)
+        db_refresh()
+
+
+        print(keywords_dict)
+
         return str(flag)
 
     return render_template('knowledge_train.html')

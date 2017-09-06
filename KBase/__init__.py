@@ -4,13 +4,19 @@
 # @time:2017/8/22
 from flask import Flask
 import click
-import KBase.views
+import threading
+import time
 # from KBase.db import init_db
 # from flask import current_app
 
 app = Flask(__name__)
 # init_db()
 
+# from KBase.FunctionForNanWang1000 import *
+#
+# dict_init()
+
+import KBase.views
 
 
 if not app.debug:

@@ -29,6 +29,12 @@
             $('#table').bootstrapTable({
                 url: '{{ url_for('result_test') }}',         //请求后台的URL（*）
                 ajaxOptions: {async:true,timeout:5000},
+                responseHandler: function(res) {
+                                        $('#question_seg').val(res['question_seg']);
+                                        if(res['error'])
+                                            layer.msg("<span style='color:red; font-size:18px;'>"+'服务器出错！'+"</span>", {icon: 2,time:3000, msg:['#fff']});
+                                        return res
+                                    },
                 method: 'get',                      //请求方式（*）
                 toolbar: '#toolbar',                //工具按钮用哪个容器
                 toolbarAlign: 'right',
@@ -116,8 +122,12 @@
 <form id="form" name="form" class="form-horizontal" action="{{ url_for('standard_tool') }}" method="post">
     <div class="">
         <div id="toolbar" class="container" style="float:left;padding-right: 0px">
-            <div class="form-group col-md-5 col-sm-5 col-xs-5" style="float:right;padding-right: 0px;">
-                <div class="col-md-10 col-sm-8 col-xs-6" style="padding-left: 0px;">
+            <div class="form-group col-md-12 col-sm-12 col-xs-12" style="float:right;padding-right: 0px;">
+                <label for="question_seg" style="float:left;padding-right: 5px;">分词结果  </label>
+                <div class="col-md-5 col-sm-5 col-xs-5" style="padding-left: 0px;">
+                    <input type="text" class="form-control" style="" id="question_seg" placeholder="" name="question" disabled="disabled">
+                </div>
+                <div class="col-md-5 col-sm-5 col-xs-5" style="padding-left: 0px;">
                     <input type="text" style="display:none">
                     <input type="text" class="form-control" style="" id="question" placeholder="输入问题" name="question">
                 </div>

@@ -29,6 +29,11 @@
             $('#table').bootstrapTable({
                 url: '{{ url_for('standard_query') }}',         //请求后台的URL（*）
                 ajaxOptions: {async:true,timeout:5000},
+                responseHandler: function(res) {
+                                        if(res['error'])
+                                            layer.msg("<span style='color:red; font-size:18px;'>"+'服务器出错！'+"</span>", {icon: 2,time:3000, msg:['#fff']});
+                                        return res
+                                    },
                 method: 'get',                      //请求方式（*）
                 toolbar: '#toolbar',                //工具按钮用哪个容器
                 striped: true,                      //是否显示行间隔色
@@ -211,7 +216,9 @@
                     data = {delete:b};
                     $.post('{{url_for("standard_delete")}}',data,
                     function(data){
-                        if(data == '0'){
+                        if(data == 'error'){
+                            layer.msg("<span style='color:red; font-size:18px;'>"+'服务器出错！'+"</span>", {icon: 2,time:3000, msg:['#fff']});
+                        }else if(data == 'True'){
                             layer.msg("<span style='font-size:18px;'>"+'删除成功！'+"</span>", {icon:1,time:1000});
                             $("#table").bootstrapTable('refresh');
                         }else{

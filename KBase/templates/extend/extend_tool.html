@@ -30,6 +30,11 @@
             $('#table').bootstrapTable({
                 url: '{{ url_for('extend_query') }}',         //请求后台的URL（*）
                 ajaxOptions: {async:true,timeout:5000},
+                responseHandler: function(res) {
+                                        if(res['error'])
+                                            layer.msg("<span style='color:red; font-size:18px;'>"+'服务器出错！'+"</span>", {icon: 2,time:3000, msg:['#fff']});
+                                        return res
+                                    },
                 method: 'get',                      //请求方式（*）
                 toolbar: '#toolbar',                //工具按钮用哪个容器
                 striped: true,                      //是否显示行间隔色
@@ -201,7 +206,9 @@
                     data = {delete:b, id:s};
                     $.post('{{url_for("extend_delete")}}',data,
                     function(data){
-                        if(data == '0'){
+                        if(data == 'error'){
+                            layer.msg("<span style='color:red; font-size:18px;'>"+'服务器出错！'+"</span>", {icon: 2,time:3000, msg:['#fff']});
+                        }else if(data == 'True'){
                             layer.msg("<span style='font-size:18px;'>"+'删除成功！'+"</span>", {icon:1,time:1000});
                             $("#table").bootstrapTable('refresh');
                         }else{
@@ -213,31 +220,6 @@
             );
         }else{
             layer.msg("<span style='font-size:18px;'>"+"请至少选中一行"+"</span>", {icon:0,time:1000});
-        };
-    });
-
-    //修改按钮实现
-    $('#btn_modify').on('click', function(){
-        var a= $('#table').bootstrapTable('getSelections');
-        if(a.length>=1){
-            var row=$.map($("#table").bootstrapTable('getSelections'),function(row){
-            return row ;
-            });
-            data = {
-                kw:row[0].value,
-                tw:row[0].synonym,
-                kv:row[0].importance,
-            };
-            layer.open({
-            type: 2,
-            title: '扩展问修改',
-            maxmin: true,
-            shadeClose: true, //点击遮罩关闭层
-            area: ['60%' , '60%'],
-            content: '{{ url_for('extend_modify') }}'
-            });
-        }else{
-            layer.msg("<span style='font-size:18px;'>"+"请选中一行"+"</span>", {icon:0,time:1000});
         };
     });
 

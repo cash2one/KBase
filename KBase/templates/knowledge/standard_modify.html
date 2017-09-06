@@ -73,7 +73,12 @@
 
 <script>
     //结果检测
-    {% if modify == False %}
+    {% if error %}
+        parent.layer.msg("<span style='font-size:18px;'>"+'服务器出错！'+"</span>", {icon:1,time:1000});
+        var index = parent.layer.getFrameIndex(window.name);
+        parent.$("#table").bootstrapTable('refresh');
+        parent.layer.close(index);
+    {% elif modify == False %}
         layer.msg("<span style='color:red; font-size:18px;'>"+'提交失败！'+"</span>", {icon: 2,time:3000, msg:['#fff']});
     {% elif modify %}
         parent.layer.msg("<span style='font-size:18px;'>"+'修改成功！'+"</span>", {icon:1,time:1000});
